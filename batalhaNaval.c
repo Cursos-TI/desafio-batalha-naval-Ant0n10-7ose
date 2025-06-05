@@ -1,194 +1,400 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 // Desafio Batalha Naval - MateCheck
 // Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
 // Siga os comentários para implementar cada parte do desafio.
 
+
 int main() {
-    // === DECLARAÇÃO DAS VARIÁVEIS ===
-    
-    // Definições do tabuleiro e navios
+    // === DECLARAÇÃO DAS CONSTANTES ===
     const int TAMANHO_TABULEIRO = 10;
     const int TAMANHO_NAVIO = 3;
+    const int TAMANHO_HABILIDADE = 7;  // Matrizes 7x7 para habilidades
+    
+    // Códigos de representação
     const int AGUA = 0;
     const int NAVIO = 3;
+    const int HABILIDADE = 5;
+    const int AREA_ATIVA = 1;
+    const int AREA_INATIVA = 0;
     
-    // Matriz do tabuleiro 10x10
+    // === DECLARAÇÃO DAS MATRIZES ===
+    // Tabuleiro principal
     int tabuleiro[10][10];
     
-    // Vetores para representar os navios
-    int navio_horizontal[3] = {3, 3, 3};  // Navio horizontal
-    int navio_vertical[3] = {3, 3, 3};    // Navio vertical
-    
-    // Coordenadas dos navios (definidas no código)
-    int navio1_linha = 2;     // Navio horizontal na linha 2
-    int navio1_coluna = 3;    // Começando na coluna 3
-    int navio2_linha = 6;     // Navio vertical começando na linha 6
-    int navio2_coluna = 7;    // Na coluna 7
+    // Matrizes de habilidades (7x7)
+    int habilidade_cone[7][7];
+    int habilidade_cruz[7][7];
+    int habilidade_octaedro[7][7];
     
     // Variáveis auxiliares
-    int i, j;                 // Para loops
-    int posicao_valida = 1;   // Flag para validação
+    int i, j;
+    int linha_origem, coluna_origem;
+    int linha_tabuleiro, coluna_tabuleiro;
+    int centro_habilidade = TAMANHO_HABILIDADE / 2;  // Centro da matriz de habilidade
+    
+    // Coordenadas das habilidades no tabuleiro
+    int cone_linha = 2, cone_coluna = 2;
+    int cruz_linha = 6, cruz_coluna = 6;
+    int octaedro_linha = 1, octaedro_coluna = 7;
     
     // === APRESENTAÇÃO DO PROGRAMA ===
     printf("╔══════════════════════════════════════════════════════════╗\n");
-    printf("║           BATALHA NAVAL - NÍVEL NOVATO                  ║\n");
-    printf("║          Posicionamento de Navios no Tabuleiro          ║\n");
+    printf("║             BATALHA NAVAL - NÍVEL MESTRE                ║\n");
+    printf("║           Habilidades Especiais e Áreas de Efeito       ║\n");
     printf("╚══════════════════════════════════════════════════════════╝\n\n");
     
-    printf("🚢 Configuração do jogo:\n");
+    printf("⚡ Sistema de Habilidades Especiais:\n");
     printf("• Tabuleiro: %dx%d\n", TAMANHO_TABULEIRO, TAMANHO_TABULEIRO);
-    printf("• Tamanho dos navios: %d posições\n", TAMANHO_NAVIO);
-    printf("• Água representada por: %d\n", AGUA);
-    printf("• Navios representados por: %d\n\n", NAVIO);
+    printf("• Matrizes de habilidade: %dx%d\n", TAMANHO_HABILIDADE, TAMANHO_HABILIDADE);
+    printf("• Água: %d | Navios: %d | Área de Efeito: %d\n\n", AGUA, NAVIO, HABILIDADE);
     
-    // === INICIALIZAÇÃO DO TABULEIRO ===
-    printf("🌊 Inicializando tabuleiro com água...\n");
+    printf("🎯 Habilidades Disponíveis:\n");
+    printf("• CONE: Área em forma de cone expandindo para baixo\n");
+    printf("• CRUZ: Área em forma de cruz centrada\n");
+    printf("• OCTAEDRO: Área em forma de losango (vista frontal)\n\n");
     
-    // Loop aninhado para inicializar todo o tabuleiro com água (0)
+    // === INICIALIZAÇÃO DO TABULEIRO PRINCIPAL ===
+    printf("🌊 Inicializando tabuleiro principal...\n");
+    
+    // Loop aninhado para inicializar tabuleiro
     for (i = 0; i < TAMANHO_TABULEIRO; i++) {
         for (j = 0; j < TAMANHO_TABULEIRO; j++) {
-            tabuleiro[i][j] = AGUA;  // Preenche com água
+            tabuleiro[i][j] = AGUA;
         }
     }
     
-    printf("✓ Tabuleiro inicializado com sucesso!\n\n");
+    // Posicionamento de alguns navios para demonstração
+    tabuleiro[1][1] = NAVIO; tabuleiro[1][2] = NAVIO; tabuleiro[1][3] = NAVIO;  // Horizontal
+    tabuleiro[5][8] = NAVIO; tabuleiro[6][8] = NAVIO; tabuleiro[7][8] = NAVIO;  // Vertical
+    tabuleiro[8][2] = NAVIO; tabuleiro[9][3] = NAVIO; tabuleiro[8][4] = NAVIO;  // Diagonal
     
-    // === VALIDAÇÃO DAS POSIÇÕES DOS NAVIOS ===
-    printf("🔍 Validando posições dos navios...\n");
+    printf("✓ Tabuleiro inicializado com navios de demonstração!\n\n");
     
-    // Validação do navio horizontal
-    if (navio1_linha < 0 || navio1_linha >= TAMANHO_TABULEIRO ||
-        navio1_coluna < 0 || navio1_coluna + TAMANHO_NAVIO > TAMANHO_TABULEIRO) {
-        printf("❌ Erro: Navio horizontal fora dos limites do tabuleiro!\n");
-        posicao_valida = 0;
+    // === CRIAÇÃO DA HABILIDADE CONE ===
+    printf("🔥 Gerando habilidade CONE...\n");
+    
+    // Inicializar matriz do cone com zeros
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            habilidade_cone[i][j] = AREA_INATIVA;
+        }
     }
     
-    // Validação do navio vertical
-    if (navio2_linha + TAMANHO_NAVIO > TAMANHO_TABULEIRO || navio2_linha < 0 ||
-        navio2_coluna < 0 || navio2_coluna >= TAMANHO_TABULEIRO) {
-        printf("❌ Erro: Navio vertical fora dos limites do tabuleiro!\n");
-        posicao_valida = 0;
+    // Lógica condicional para criar formato de cone
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            // Distância do centro horizontalmente
+            int distancia_centro = abs(j - centro_habilidade);
+            
+            // Cone: largura aumenta conforme desce
+            // Na linha 0 (topo): apenas centro
+            // Na linha 1: centro ± 1
+            // Na linha 2: centro ± 2, etc.
+            if (distancia_centro <= i && i <= centro_habilidade + 1) {
+                habilidade_cone[i][j] = AREA_ATIVA;
+            }
+        }
     }
     
-    // Verificação de sobreposição (simples)
-    // Verifica se os navios se cruzam
-    if (navio1_linha == navio2_linha && 
-        navio2_coluna >= navio1_coluna && 
-        navio2_coluna < navio1_coluna + TAMANHO_NAVIO) {
-        printf("❌ Erro: Navios se sobrepõem!\n");
-        posicao_valida = 0;
+    printf("✓ Habilidade CONE criada! Formato: ponto no topo expandindo\n\n");
+    
+    // === CRIAÇÃO DA HABILIDADE CRUZ ===
+    printf("✝️  Gerando habilidade CRUZ...\n");
+    
+    // Inicializar matriz da cruz com zeros
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            habilidade_cruz[i][j] = AREA_INATIVA;
+        }
     }
     
-    if (posicao_valida) {
-        printf("✓ Posições dos navios são válidas!\n\n");
-    } else {
-        printf("❌ Posições inválidas! Encerrando programa.\n");
-        return 1;
+    // Lógica condicional para criar formato de cruz
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            // Cruz: linha central horizontal E coluna central vertical
+            if (i == centro_habilidade || j == centro_habilidade) {
+                habilidade_cruz[i][j] = AREA_ATIVA;
+            }
+        }
     }
     
-    // === POSICIONAMENTO DO NAVIO HORIZONTAL ===
-    printf("🚢 Posicionando navio horizontal...\n");
-    printf("📍 Posição: linha %d, colunas %d-%d\n", 
-           navio1_linha, navio1_coluna, navio1_coluna + TAMANHO_NAVIO - 1);
+    printf("✓ Habilidade CRUZ criada! Formato: linhas perpendiculares\n\n");
     
-    // Loop para posicionar o navio horizontal
-    for (i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[navio1_linha][navio1_coluna + i] = navio_horizontal[i];
+    // === CRIAÇÃO DA HABILIDADE OCTAEDRO (LOSANGO) ===
+    printf("💎 Gerando habilidade OCTAEDRO (losango)...\n");
+    
+    // Inicializar matriz do octaedro com zeros
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            habilidade_octaedro[i][j] = AREA_INATIVA;
+        }
     }
     
-    printf("✓ Navio horizontal posicionado!\n\n");
-    
-    // === POSICIONAMENTO DO NAVIO VERTICAL ===
-    printf("🚢 Posicionando navio vertical...\n");
-    printf("📍 Posição: linhas %d-%d, coluna %d\n", 
-           navio2_linha, navio2_linha + TAMANHO_NAVIO - 1, navio2_coluna);
-    
-    // Loop para posicionar o navio vertical
-    for (i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[navio2_linha + i][navio2_coluna] = navio_vertical[i];
+    // Lógica condicional para criar formato de losango (octaedro frontal)
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            // Distâncias do centro
+            int dist_vertical = abs(i - centro_habilidade);
+            int dist_horizontal = abs(j - centro_habilidade);
+            
+            // Losango: soma das distâncias <= raio
+            if (dist_vertical + dist_horizontal <= centro_habilidade) {
+                habilidade_octaedro[i][j] = AREA_ATIVA;
+            }
+        }
     }
     
-    printf("✓ Navio vertical posicionado!\n\n");
+    printf("✓ Habilidade OCTAEDRO criada! Formato: losango centrado\n\n");
     
-    // === EXIBIÇÃO DO TABULEIRO ===
+    // === EXIBIÇÃO DAS MATRIZES DE HABILIDADE ===
     printf("╔══════════════════════════════════════════════════════════╗\n");
-    printf("║                    TABULEIRO FINAL                      ║\n");
+    printf("║                 MATRIZES DE HABILIDADE                  ║\n");
     printf("╚══════════════════════════════════════════════════════════╝\n\n");
     
-    printf("🗺️  Legenda: %d = Água | %d = Navio\n\n", AGUA, NAVIO);
+    // Exibir habilidade CONE
+    printf("🔥 HABILIDADE CONE (%dx%d):\n", TAMANHO_HABILIDADE, TAMANHO_HABILIDADE);
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        printf("   ");
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade_cone[i][j] == AREA_ATIVA) {
+                printf("3 ");
+            } else {
+                printf("0 ");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
     
-    // Cabeçalho com números das colunas
-    printf("   ");  // Espaço para números das linhas
+    // Exibir habilidade CRUZ
+    printf("✝️  HABILIDADE CRUZ (%dx%d):\n", TAMANHO_HABILIDADE, TAMANHO_HABILIDADE);
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        printf("   ");
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade_cruz[i][j] == AREA_ATIVA) {
+                printf("3 ");
+            } else {
+                printf("0 ");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+    
+    // Exibir habilidade OCTAEDRO
+    printf("💎 HABILIDADE OCTAEDRO (%dx%d):\n", TAMANHO_HABILIDADE, TAMANHO_HABILIDADE);
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        printf("   ");
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade_octaedro[i][j] == AREA_ATIVA) {
+                printf("3 ");
+            } else {
+                printf("0 ");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+    
+    // === APLICAÇÃO DA HABILIDADE CONE NO TABULEIRO ===
+    printf("⚡ Aplicando habilidade CONE no tabuleiro...\n");
+    printf("📍 Ponto de origem: (%d, %d)\n", cone_linha, cone_coluna);
+    
+    // Loop aninhado para sobrepor habilidade ao tabuleiro
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            // Se a posição está ativa na matriz de habilidade
+            if (habilidade_cone[i][j] == AREA_ATIVA) {
+                // Calcular posição correspondente no tabuleiro
+                linha_tabuleiro = cone_linha - centro_habilidade + i;
+                coluna_tabuleiro = cone_coluna - centro_habilidade + j;
+                
+                // Verificar se está dentro dos limites do tabuleiro
+                if (linha_tabuleiro >= 0 && linha_tabuleiro < TAMANHO_TABULEIRO &&
+                    coluna_tabuleiro >= 0 && coluna_tabuleiro < TAMANHO_TABULEIRO) {
+                    
+                    // Aplicar efeito apenas se não for navio (preservar navios)
+                    if (tabuleiro[linha_tabuleiro][coluna_tabuleiro] != NAVIO) {
+                        tabuleiro[linha_tabuleiro][coluna_tabuleiro] = HABILIDADE;
+                    }
+                }
+            }
+        }
+    }
+    
+    printf("✓ Habilidade CONE aplicada!\n\n");
+    
+    // === EXIBIÇÃO DO TABULEIRO COM CONE ===
+    printf("╔══════════════════════════════════════════════════════════╗\n");
+    printf("║              TABULEIRO COM HABILIDADE CONE              ║\n");
+    printf("╚══════════════════════════════════════════════════════════╝\n\n");
+    
+    printf("🗺️  Legenda: 0=Água | 3=Navio | 5=Área de Efeito\n\n");
+    
+    // Cabeçalho
+    printf("   ");
     for (j = 0; j < TAMANHO_TABULEIRO; j++) {
         printf(" %d ", j);
     }
     printf("\n");
     
-    // Linha separadora
-    printf("   ");
-    for (j = 0; j < TAMANHO_TABULEIRO; j++) {
-        printf("---");
-    }
-    printf("\n");
-    
-    // Loop aninhado para exibir o tabuleiro
+    // Exibir tabuleiro com habilidade aplicada
     for (i = 0; i < TAMANHO_TABULEIRO; i++) {
-        printf("%d |", i);  // Número da linha
-        
+        printf("%d |", i);
         for (j = 0; j < TAMANHO_TABULEIRO; j++) {
             printf(" %d ", tabuleiro[i][j]);
         }
-        printf("|\n");  // Fechamento da linha
+        printf("|\n");
     }
+    printf("\n");
     
-    // Linha separadora inferior
-    printf("   ");
-    for (j = 0; j < TAMANHO_TABULEIRO; j++) {
-        printf("---");
-    }
-    printf("\n\n");
-    
-    // === RESUMO DOS NAVIOS POSICIONADOS ===
-    printf("╔══════════════════════════════════════════════════════════╗\n");
-    printf("║                  RESUMO DA FROTA                        ║\n");
-    printf("╚══════════════════════════════════════════════════════════╝\n\n");
-    
-    printf("🚢 NAVIO 1 (Horizontal):\n");
-    printf("   • Tamanho: %d posições\n", TAMANHO_NAVIO);
-    printf("   • Posição: Linha %d, Colunas %d, %d, %d\n", 
-           navio1_linha, navio1_coluna, navio1_coluna + 1, navio1_coluna + 2);
-    printf("   • Orientação: Horizontal (→)\n\n");
-    
-    printf("🚢 NAVIO 2 (Vertical):\n");
-    printf("   • Tamanho: %d posições\n", TAMANHO_NAVIO);
-    printf("   • Posição: Linhas %d, %d, %d, Coluna %d\n", 
-           navio2_linha, navio2_linha + 1, navio2_linha + 2, navio2_coluna);
-    printf("   • Orientação: Vertical (↓)\n\n");
-    
-    // === ESTATÍSTICAS DO TABULEIRO ===
-    int posicoes_agua = 0;
-    int posicoes_navio = 0;
-    
-    // Conta posições de água e navios
+    // === RESETAR TABULEIRO E APLICAR CRUZ ===
+    // Limpar efeitos anteriores
     for (i = 0; i < TAMANHO_TABULEIRO; i++) {
         for (j = 0; j < TAMANHO_TABULEIRO; j++) {
-            if (tabuleiro[i][j] == AGUA) {
-                posicoes_agua++;
-            } else if (tabuleiro[i][j] == NAVIO) {
-                posicoes_navio++;
+            if (tabuleiro[i][j] == HABILIDADE) {
+                tabuleiro[i][j] = AGUA;
             }
         }
     }
     
-    printf("📊 ESTATÍSTICAS:\n");
-    printf("   • Total de posições: %d\n", TAMANHO_TABULEIRO * TAMANHO_TABULEIRO);
-    printf("   • Posições com água: %d\n", posicoes_agua);
-    printf("   • Posições com navios: %d\n", posicoes_navio);
-    printf("   • Navios posicionados: 2\n\n");
+    printf("⚡ Aplicando habilidade CRUZ no tabuleiro...\n");
+    printf("📍 Ponto de origem: (%d, %d)\n", cruz_linha, cruz_coluna);
     
-    printf("🎯 Tabuleiro de Batalha Naval criado com sucesso!\n");
-    printf("🚀 Pronto para a próxima fase do desenvolvimento!\n");
+    // Aplicar habilidade CRUZ
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade_cruz[i][j] == AREA_ATIVA) {
+                linha_tabuleiro = cruz_linha - centro_habilidade + i;
+                coluna_tabuleiro = cruz_coluna - centro_habilidade + j;
+                
+                if (linha_tabuleiro >= 0 && linha_tabuleiro < TAMANHO_TABULEIRO &&
+                    coluna_tabuleiro >= 0 && coluna_tabuleiro < TAMANHO_TABULEIRO) {
+                    
+                    if (tabuleiro[linha_tabuleiro][coluna_tabuleiro] != NAVIO) {
+                        tabuleiro[linha_tabuleiro][coluna_tabuleiro] = HABILIDADE;
+                    }
+                }
+            }
+        }
+    }
+    
+    printf("✓ Habilidade CRUZ aplicada!\n\n");
+    
+    // === EXIBIÇÃO DO TABULEIRO COM CRUZ ===
+    printf("╔══════════════════════════════════════════════════════════╗\n");
+    printf("║              TABULEIRO COM HABILIDADE CRUZ              ║\n");
+    printf("╚══════════════════════════════════════════════════════════╝\n\n");
+    
+    printf("🗺️  Legenda: 0=Água | 3=Navio | 5=Área de Efeito\n\n");
+    
+    // Cabeçalho
+    printf("   ");
+    for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+        printf(" %d ", j);
+    }
+    printf("\n");
+    
+    // Exibir tabuleiro com cruz
+    for (i = 0; i < TAMANHO_TABULEIRO; i++) {
+        printf("%d |", i);
+        for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+            printf(" %d ", tabuleiro[i][j]);
+        }
+        printf("|\n");
+    }
+    printf("\n");
+    
+    // === RESETAR E APLICAR OCTAEDRO ===
+    // Limpar efeitos da cruz
+    for (i = 0; i < TAMANHO_TABULEIRO; i++) {
+        for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+            if (tabuleiro[i][j] == HABILIDADE) {
+                tabuleiro[i][j] = AGUA;
+            }
+        }
+    }
+    
+    printf("⚡ Aplicando habilidade OCTAEDRO no tabuleiro...\n");
+    printf("📍 Ponto de origem: (%d, %d)\n", octaedro_linha, octaedro_coluna);
+    
+    // Aplicar habilidade OCTAEDRO
+    for (i = 0; i < TAMANHO_HABILIDADE; i++) {
+        for (j = 0; j < TAMANHO_HABILIDADE; j++) {
+            if (habilidade_octaedro[i][j] == AREA_ATIVA) {
+                linha_tabuleiro = octaedro_linha - centro_habilidade + i;
+                coluna_tabuleiro = octaedro_coluna - centro_habilidade + j;
+                
+                if (linha_tabuleiro >= 0 && linha_tabuleiro < TAMANHO_TABULEIRO &&
+                    coluna_tabuleiro >= 0 && coluna_tabuleiro < TAMANHO_TABULEIRO) {
+                    
+                    if (tabuleiro[linha_tabuleiro][coluna_tabuleiro] != NAVIO) {
+                        tabuleiro[linha_tabuleiro][coluna_tabuleiro] = HABILIDADE;
+                    }
+                }
+            }
+        }
+    }
+    
+    printf("✓ Habilidade OCTAEDRO aplicada!\n\n");
+    
+    // === EXIBIÇÃO FINAL COM OCTAEDRO ===
+    printf("╔══════════════════════════════════════════════════════════╗\n");
+    printf("║            TABULEIRO COM HABILIDADE OCTAEDRO            ║\n");
+    printf("╚══════════════════════════════════════════════════════════╝\n\n");
+    
+    printf("🗺️  Legenda: 0=Água | 3=Navio | 5=Área de Efeito\n\n");
+    
+    // Cabeçalho
+    printf("   ");
+    for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+        printf(" %d ", j);
+    }
+    printf("\n");
+    
+    // Exibir tabuleiro final
+    for (i = 0; i < TAMANHO_TABULEIRO; i++) {
+        printf("%d |", i);
+        for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+            printf(" %d ", tabuleiro[i][j]);
+        }
+        printf("|\n");
+    }
+    printf("\n");
+    
+    // === ANÁLISE FINAL ===
+    printf("╔══════════════════════════════════════════════════════════╗\n");
+    printf("║                    ANÁLISE FINAL                        ║\n");
+    printf("╚══════════════════════════════════════════════════════════╝\n\n");
+    
+    // Contar posições afetadas por cada habilidade
+    int posicoes_afetadas = 0;
+    for (i = 0; i < TAMANHO_TABULEIRO; i++) {
+        for (j = 0; j < TAMANHO_TABULEIRO; j++) {
+            if (tabuleiro[i][j] == HABILIDADE) {
+                posicoes_afetadas++;
+            }
+        }
+    }
+    
+    printf("📊 ESTATÍSTICAS DAS HABILIDADES:\n");
+    printf("• Habilidades implementadas: 3 (Cone, Cruz, Octaedro)\n");
+    printf("• Tamanho das matrizes: %dx%d\n", TAMANHO_HABILIDADE, TAMANHO_HABILIDADE);
+    printf("• Posições afetadas no tabuleiro: %d\n", posicoes_afetadas);
+    printf("• Algoritmos condicionais: Utilizados para todas as formas\n");
+    printf("• Validação de limites: Implementada para sobreposição\n\n");
+    
+    printf("🎯 TÉCNICAS IMPLEMENTADAS:\n");
+    printf("✓ Loops aninhados para construção de matrizes\n");
+    printf("✓ Condicionais complexas para formas geométricas\n");
+    printf("✓ Sobreposição de matrizes com validação de limites\n");
+    printf("✓ Preservação de elementos existentes (navios)\n");
+    printf("✓ Visualização dinâmica com diferentes representações\n\n");
+    
+    printf("🏆 NÍVEL MESTRE CONCLUÍDO COM SUCESSO!\n");
+    printf("🚀 Sistema de habilidades especiais implementado!\n");
     
     return 0;
 }
